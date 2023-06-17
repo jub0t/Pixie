@@ -1,6 +1,3 @@
-# Interpreter
-
-```js
 let name = "John Doe"
 print(name)
 
@@ -10,4 +7,3 @@ echo(name)
 const cool = true
 const age = 18
 echo(age, cool)
-```
