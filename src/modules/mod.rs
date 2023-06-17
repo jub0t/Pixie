@@ -1,23 +1,27 @@
 use std::any::Any;
 
+#[derive(Debug)]
 pub enum Keywords {
-    NONE = 0,
-    CONST = 1,
+    LET,
+    CONST,
+    NONE,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum Methods {
     NONE = 0,
     PRINT = 1,
-    PRINTLN = 2,
+    ECHO = 2,
 }
 
+#[derive(Debug)]
 pub struct Variable {
     pub vtype: Type,
+    pub mutable: bool,
     pub value: Box<dyn Any>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Type {
     I32(i32),
     F64(f64),
@@ -57,13 +61,14 @@ pub fn get_all_paren_indexes(code: &str) -> Vec<(usize, usize)> {
 pub fn keyword_to_enum(kw: String) -> Keywords {
     match kw.to_lowercase().as_str() {
         "const" => return Keywords::CONST,
+        "let" => return Keywords::LET,
         _ => return Keywords::NONE,
     }
 }
 
 pub fn method_to_enum(kw: String) -> Methods {
     match kw.to_lowercase().as_str() {
-        "lnprint" => return Methods::PRINTLN,
+        "echo" => return Methods::ECHO,
         "print" => return Methods::PRINT,
         _ => return Methods::NONE,
     }
@@ -132,11 +137,7 @@ pub fn get_expression(code: &str, from: usize, to: usize) -> Option<&str> {
     Some(&code[from..=to])
 }
 
-pub fn track_until_nl_or_sm(code: &str, start: usize) -> usize {
-    if let Some(sm_index) = code[start..].find(';') {
-        return start + sm_index;
-    }
-
+pub fn track_until_nl(code: &str, start: usize) -> usize {
     if let Some(nl_index) = code[start..].find('\n') {
         return start + nl_index;
     }
@@ -144,15 +145,16 @@ pub fn track_until_nl_or_sm(code: &str, start: usize) -> usize {
     code.len()
 }
 
-pub fn split_by_sm_nl(code: &str) -> Vec<&str> {
+pub fn split_by_nl(code: &str) -> Vec<&str> {
     let mut result = Vec::new();
     let mut start = 0;
 
     for (i, c) in code.char_indices() {
-        if c == ';' || c == '\n' {
+        if c == '\n' {
             if start != i {
                 result.push(&code[start..i]);
             }
+
             start = i + 1;
         }
     }
@@ -165,31 +167,52 @@ pub fn split_by_sm_nl(code: &str) -> Vec<&str> {
 }
 
 pub fn identify_type(value: &str) -> Type {
-    if let Ok(parsed_value) = value.replace(" ", "").parse::<i32>() {
+    let trimmed_value = value.trim();
+
+    if let Ok(parsed_value) = trimmed_value.parse::<i32>() {
         Type::I32(parsed_value)
-    } else if let Ok(parsed_value) = value.replace(" ", "").parse::<f64>() {
+    } else if let Ok(parsed_value) = trimmed_value.parse::<f64>() {
         Type::F64(parsed_value)
-    } else if let Ok(parsed_value) = value.parse::<bool>() {
+    } else if let Ok(parsed_value) = trimmed_value.parse::<bool>() {
         Type::Bool(parsed_value)
     } else {
-        Type::String(value.to_string())
+        Type::String(trimmed_value.to_string())
     }
 }
 
 pub fn parse_to_type(value: &str, vtype: Type) -> Box<dyn Any> {
+    let numval = value.replace(" ", "");
     match vtype {
-        Type::I32(_) => Box::new(value.parse::<i32>().ok().map(Type::I32)),
-        Type::F64(_) => Box::new(value.parse::<f64>().ok().map(Type::F64)),
-        Type::Bool(_) => Box::new(value.parse::<bool>().ok().map(Type::Bool)),
+        Type::I32(_) => {
+            if let Ok(parsed_value) = numval.parse::<i32>() {
+                Box::new(Type::I32(parsed_value))
+            } else {
+                Box::new(Type::String(value.to_string()))
+            }
+        }
+        Type::F64(_) => {
+            if let Ok(parsed_value) = numval.parse::<f64>() {
+                Box::new(Type::F64(parsed_value))
+            } else {
+                Box::new(Type::String(value.to_string()))
+            }
+        }
+        Type::Bool(_) => {
+            if let Ok(parsed_value) = value.parse::<bool>() {
+                Box::new(Type::Bool(parsed_value))
+            } else {
+                Box::new(Type::String(value.to_string()))
+            }
+        }
         Type::String(_) => Box::new(Type::String(value.to_string())),
     }
 }
 
-pub fn print(var: &Variable) {
-    match &var.vtype {
-        Type::I32(value) => print!("{}", value),
-        Type::F64(value) => print!("{}", value),
-        Type::Bool(value) => print!("{}", value),
-        Type::String(value) => print!("{}", value),
+pub fn print_variable_value(value: &Variable) {
+    match &value.vtype {
+        Type::I32(i) => print!("{}", i),
+        Type::F64(f) => print!("{}", f),
+        Type::Bool(b) => print!("{}", b),
+        Type::String(s) => print!("{}", s),
     }
 }

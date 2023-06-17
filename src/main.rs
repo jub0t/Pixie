@@ -1,7 +1,11 @@
 mod modules;
 
 use modules::*;
-use std::{collections::HashMap, env, fs};
+use std::{
+    collections::HashMap,
+    env::{self},
+    fs,
+};
 
 fn main() {
     let mut variables: HashMap<String, Variable> = HashMap::new();
@@ -13,8 +17,7 @@ fn main() {
     match bytes {
         Ok(bytes) => {
             let code = String::from_utf8(bytes).unwrap();
-
-            let to_parse = split_by_sm_nl(code.as_str());
+            let to_parse = split_by_nl(code.as_str());
 
             for exp in to_parse {
                 let code = exp;
@@ -23,82 +26,99 @@ fn main() {
                 let spaces = get_all_space_indexes(code);
                 let mut stack = "".to_string();
 
-                // Parser
                 for (index, char) in chars.to_owned() {
                     stack = stack.to_string() + char;
 
-                    match keyword_to_enum(stack.clone()) {
-                        Keywords::CONST => match get_next_space_index(index, &spaces) {
-                            Some(next_space_index) => {
-                                let to = next_space_index - 1;
-                                let from = index + 1;
-                                let var = get_expression(&code, from, to).unwrap();
+                    let kw = keyword_to_enum(stack.clone());
+                    match kw {
+                        Keywords::CONST | Keywords::LET => {
+                            match get_next_space_index(index, &spaces) {
+                                Some(next_space_index) => {
+                                    let to = next_space_index - 1;
+                                    let from = index + 1;
+                                    let var = get_expression(&code, from, to).unwrap();
 
-                                if variable_name_valid(var) {
-                                    let vf = from + var.len();
-                                    let vt = to + var.len();
+                                    if variable_name_valid(var) {
+                                        let vf = from + var.len();
+                                        let vt = to + var.len();
 
-                                    if equal_sign_exist(&code, vf, vt) {
-                                        let exind = track_until_nl_or_sm(&code, vt) - 1;
-                                        let varval = get_expression(&code, vt, exind)
-                                            .unwrap()
-                                            .replace("\"", "");
-                                        let vtype = identify_type(&varval);
-                                        let varval = parse_to_type(&varval, vtype.clone());
+                                        if equal_sign_exist(&code, vf, vt) {
+                                            let exind = track_until_nl(&code, vt) - 1;
+                                            let varval = get_expression(&code, vt, exind)
+                                                .unwrap()
+                                                .replace("\"", "");
+                                            let vtype = identify_type(&varval);
+                                            let varval = parse_to_type(&varval, vtype.clone());
 
-                                        // DEFINE VARIABLE
-                                        variables.insert(
-                                            var.clone().to_string(),
-                                            Variable {
+                                            let vkey = var.clone();
+                                            let mutable: bool = match kw {
+                                                Keywords::LET => true,
+                                                Keywords::CONST => false,
+                                                _ => false,
+                                            };
+
+                                            let data = Variable {
                                                 vtype,
+                                                mutable,
                                                 value: Box::new(varval),
-                                            },
-                                        );
+                                            };
 
-                                        stack = "".to_string();
-                                        continue;
-                                    } else {
-                                        println!(
-                                            "Expected Equal Operator Within Column {}-{}",
-                                            vf, vt
-                                        );
-                                    }
-                                } else {
-                                    println!("The variable name is not valid.");
-                                }
-                            }
-                            None => {
-                                println!("No space index found after {}", index);
-                            }
-                        },
-                        _ => {}
-                    }
-
-                    let method = method_to_enum(stack.clone());
-                    match method {
-                        Methods::PRINT | Methods::PRINTLN => {
-                            let params = get_all_paren_indexes(code);
-
-                            for (start, end) in params {
-                                let to_print = get_all_param(code, start + 1, end - 1);
-                                for val in to_print {
-                                    match variables.get(val) {
-                                        None => {
-                                            println!("Undefined Variable: {}", val);
-                                        }
-                                        Some(value) => {
-                                            if method == Methods::PRINT {
-                                                print(value);
-                                            } else if method == Methods::PRINTLN {
-                                                print(value);
-                                                print!("\n")
+                                            // DEFINE VARIABLE
+                                            match variables.get(vkey) {
+                                                Some(var) => {
+                                                    if var.mutable {
+                                                        variables.insert(vkey.to_string(), data);
+                                                    } else {
+                                                        println!("Attempt to re-define '{}'", vkey);
+                                                    }
+                                                }
+                                                None => {
+                                                    variables.insert(vkey.to_string(), data);
+                                                }
                                             }
+
+                                            stack = "".to_string();
+                                            continue;
+                                        } else {
+                                            println!(
+                                                "Expected Equal Operator Within Column {}-{}",
+                                                vf, vt
+                                            );
                                         }
+                                    } else {
+                                        println!("The variable name is not valid.");
                                     }
+                                }
+                                None => {
+                                    println!("No space index found after {}", index);
                                 }
                             }
                         }
                         _ => {}
+                    }
+
+                    let method = method_to_enum(stack.clone());
+                    let params: Vec<(usize, usize)> = get_all_paren_indexes(code);
+
+                    for (start, end) in params {
+                        let to_print = get_all_param(code, start + 1, end - 1);
+                        for val in to_print {
+                            match variables.get(val) {
+                                None => {
+                                    println!("Undefined Variable: {}", val);
+                                }
+                                Some(value) => match method {
+                                    Methods::ECHO => {
+                                        print_variable_value(value);
+                                        println!();
+                                    }
+                                    Methods::PRINT => {
+                                        print_variable_value(value);
+                                    }
+                                    _ => {}
+                                },
+                            }
+                        }
                     }
                 }
             }
