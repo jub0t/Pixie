@@ -1,6 +1,9 @@
+mod enums;
 mod modules;
+mod processor;
 
 use modules::*;
+use processor::*;
 use std::{
     collections::HashMap,
     env::{self},
@@ -10,6 +13,11 @@ use std::{
 fn main() {
     let mut variables: HashMap<String, Variable> = HashMap::new();
     let args: Vec<String> = env::args().collect();
+
+    if args.len() < 2 {
+        println!("Please provide a filename as an argument.");
+        return;
+    }
 
     let file_name = args[1].clone();
     let bytes = fs::read(file_name);
@@ -26,8 +34,8 @@ fn main() {
                 let spaces = get_all_space_indexes(code);
                 let mut stack = "".to_string();
 
-                for (index, char) in chars.to_owned() {
-                    stack = stack.to_string() + char;
+                for (index, character) in chars.clone() {
+                    stack = stack.to_string() + character;
 
                     let kw = keyword_to_enum(stack.clone());
                     match kw {
@@ -69,7 +77,6 @@ fn main() {
                                                     if var.mutable {
                                                         variables.insert(vkey.to_string(), data);
                                                     } else {
-                                                        println!("Attempt to re-define '{}'", vkey);
                                                     }
                                                 }
                                                 None => {
@@ -124,11 +131,7 @@ fn main() {
             }
         }
         Err(err) => {
-            println!("{}", err);
+            println!("Error reading the file: {}", err);
         }
     }
-
-    // println!("{:?}", newlines);
-    // println!("{:?}", qoutes);
-    // println!("{:?}", spaces);
 }
