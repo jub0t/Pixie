@@ -49,7 +49,6 @@ pub fn get_all_param(code: &str, from: usize, to: usize) -> Vec<&str> {
     }
 
     let code_slice = &code[from..=to];
-
     let params: Vec<&str> = code_slice.split(',').map(|param| param.trim()).collect();
 
     params

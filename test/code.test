@@ -2,8 +2,10 @@ let name = "John Doe"
 print(name)
 
 const name = "Jane Doe"
-echo(name)
+print(name)
 
 const cool = true
 const age = 18
-echo(age, cool)
+print(age, cool)
+
+echo("\nNewlines\n  Work Too")

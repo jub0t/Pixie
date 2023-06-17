@@ -55,15 +55,39 @@ pub fn parse_to_type(value: &str, vtype: Type) -> Box<dyn Any> {
                 Box::new(Type::String(value.to_string()))
             }
         }
-        Type::String(_) => Box::new(Type::String(value.to_string())),
+        Type::String(_) => Box::new(Type::String(value.to_string().replace("\"", ""))),
     }
 }
 
+pub fn remove_quotes_from_sides(code: &str) -> String {
+    if code.len() >= 2 && code.starts_with('"') && code.ends_with('"') {
+        code[1..code.len() - 1].to_string()
+    } else {
+        code.to_string()
+    }
+}
 pub fn print_variable_value(value: &Variable) {
     match &value.vtype {
         Type::I32(i) => print!("{}", i),
         Type::F64(f) => print!("{}", f),
         Type::Bool(b) => print!("{}", b),
-        Type::String(s) => print!("{}", s),
+        Type::String(s) => {
+            let nq = remove_quotes_from_sides(s);
+            let reformed = nq.replace("\\n", "\n");
+
+            print!("{}", reformed)
+        }
+    }
+}
+
+pub fn is_literal(param: &str) -> bool {
+    if param.starts_with('"') && param.ends_with('"') {
+        true
+    } else if let Ok(_) = param.parse::<i32>() {
+        true
+    } else if let Ok(_) = param.parse::<f64>() {
+        true
+    } else {
+        false
     }
 }

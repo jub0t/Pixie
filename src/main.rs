@@ -34,7 +34,7 @@ fn main() {
                 let spaces = get_all_space_indexes(code);
                 let mut stack = "".to_string();
 
-                for (index, character) in chars.clone() {
+                'chariter: for (index, character) in chars.clone() {
                     stack = stack.to_string() + character;
 
                     let kw = keyword_to_enum(stack.clone());
@@ -71,12 +71,10 @@ fn main() {
                                                 value: Box::new(varval),
                                             };
 
-                                            // DEFINE VARIABLE
                                             match variables.get(vkey) {
                                                 Some(var) => {
                                                     if var.mutable {
                                                         variables.insert(vkey.to_string(), data);
-                                                    } else {
                                                     }
                                                 }
                                                 None => {
@@ -85,7 +83,7 @@ fn main() {
                                             }
 
                                             stack = "".to_string();
-                                            continue;
+                                            continue 'chariter;
                                         } else {
                                             println!(
                                                 "Expected Equal Operator Within Column {}-{}",
@@ -105,25 +103,48 @@ fn main() {
                     }
 
                     let method = method_to_enum(stack.clone());
-                    let params: Vec<(usize, usize)> = get_all_paren_indexes(code);
+                    let params = get_all_paren_indexes(code);
 
                     for (start, end) in params {
                         let to_print = get_all_param(code, start + 1, end - 1);
-                        for val in to_print {
-                            match variables.get(val) {
-                                None => {
-                                    println!("Undefined Variable: {}", val);
-                                }
-                                Some(value) => match method {
-                                    Methods::ECHO => {
-                                        print_variable_value(value);
-                                        println!();
-                                    }
+
+                        'paramiter: for val in to_print {
+                            if is_literal(val) {
+                                let lt = identify_type(val);
+                                let lval = parse_to_type(val, lt.clone());
+
+                                print_variable_value(&Variable {
+                                    vtype: lt,
+                                    value: lval,
+                                    mutable: false,
+                                });
+
+                                match method {
                                     Methods::PRINT => {
-                                        print_variable_value(value);
+                                        println!("");
                                     }
                                     _ => {}
-                                },
+                                }
+
+                                break 'chariter;
+                            } else {
+                                match variables.get(val) {
+                                    None => {
+                                        println!("Variable '{}' is not defined", val)
+                                    }
+                                    Some(value) => match method {
+                                        Methods::ECHO => {
+                                            print_variable_value(value);
+                                            break 'paramiter;
+                                        }
+                                        Methods::PRINT => {
+                                            print_variable_value(value);
+                                            println!();
+                                            break 'paramiter;
+                                        }
+                                        _ => {}
+                                    },
+                                }
                             }
                         }
                     }
