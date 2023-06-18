@@ -1,10 +1,13 @@
 use std::any::Any;
 
-#[derive(Debug)]
+pub type AnyValue = Box<dyn Any>;
+
+#[derive(PartialEq, Debug)]
 pub enum Keywords {
-    LET,
-    CONST,
-    NONE,
+    NONE = 0,
+    CONST = 1,
+    LET = 2,
+    FUNCTION = 3,
 }
 
 #[derive(PartialEq, Debug)]
@@ -18,7 +21,33 @@ pub enum Methods {
 pub struct Variable {
     pub vtype: Type,
     pub mutable: bool,
-    pub value: Box<dyn Any>,
+    pub value: AnyValue,
+}
+
+#[derive(Debug)]
+enum FuntionType {
+    STANDARD,
+    CUSTOM,
+}
+
+#[derive(Debug)]
+pub struct Action {
+    ptype: Type,
+    value: AnyValue,
+}
+
+#[derive(Debug)]
+pub struct Param {
+    ptype: Type,
+    value: AnyValue,
+}
+
+#[derive(Debug)]
+pub struct Function {
+    ftype: FuntionType,
+    name: String,
+    params: Vec<Param>,
+    action: Vec<Action>,
 }
 
 #[derive(Debug, Clone, PartialEq)]

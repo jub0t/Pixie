@@ -70,6 +70,23 @@ pub fn track_until_nl(code: &str, start: usize) -> usize {
     code.len()
 }
 
+pub fn track_until_nl_sc(code: &str, start: usize) -> usize {
+    let mut index = start;
+    let code_len = code.len();
+
+    while index < code_len {
+        let current_char = code.chars().nth(index).unwrap();
+
+        if current_char == '\n' || current_char == ';' {
+            break;
+        }
+
+        index += 1;
+    }
+
+    index
+}
+
 pub fn split_by_nl(code: &str) -> Vec<&str> {
     let mut result = Vec::new();
     let mut start = 0;
@@ -114,4 +131,48 @@ pub fn get_all_paren_indexes(code: &str) -> Vec<(usize, usize)> {
     }
 
     result
+}
+
+pub fn track_until_left_paren(code: &str) -> Option<&str> {
+    let end_pos = code.find('(')?;
+
+    Some(&code[..end_pos])
+}
+
+pub fn track_until_right_paren(code: &str) -> Option<&str> {
+    let end_pos = code.find(')')?;
+
+    Some(&code[..end_pos])
+}
+
+pub fn track_until_function_end_brackets(code: &str) -> &str {
+    let start_idx = code.find("function").unwrap_or(0); // Find the index of the first occurrence of "fn" in the code
+    let mut open_braces = 0;
+    let mut end_idx = start_idx;
+
+    for (idx, c) in code[start_idx..].char_indices() {
+        if c == '{' {
+            open_braces += 1;
+        } else if c == '}' {
+            open_braces -= 1;
+            if open_braces == 0 {
+                end_idx = idx + start_idx + 1; // Add 1 to include the closing brace in the tracked portion
+                break;
+            }
+        }
+    }
+
+    &code[start_idx..end_idx]
+}
+
+pub fn is_alphanumeric_str(s: &str) -> bool {
+    s.chars()
+        .all(|c| c.is_alphanumeric() || c.to_string() == "_")
+}
+
+pub fn remove_first_char(s: &str) -> &str {
+    match s.chars().next() {
+        Some(_) => &s[1..],
+        None => s,
+    }
 }

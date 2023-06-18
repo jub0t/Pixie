@@ -1,0 +1,19 @@
+master
+
+let name = "John Doe"
+print(name)
+
+const name = "Jane Doe"
+print(name)
+
+const cool = true
+const age = 18
+print(age, cool)
+
+echo("Newlines Work Too\n")
+
+function my_func(text) {
+    print(text)
+}
+
+my_func("Function Params Work")

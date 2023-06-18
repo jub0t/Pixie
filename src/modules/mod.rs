@@ -3,14 +3,15 @@ use std::any::Any;
 
 pub fn keyword_to_enum(kw: String) -> Keywords {
     match kw.to_lowercase().as_str() {
+        "function" => return Keywords::FUNCTION,
         "const" => return Keywords::CONST,
         "let" => return Keywords::LET,
         _ => return Keywords::NONE,
     }
 }
 
-pub fn method_to_enum(kw: String) -> Methods {
-    match kw.to_lowercase().as_str() {
+pub fn method_to_enum(md: String) -> Methods {
+    match md.to_lowercase().as_str() {
         "echo" => return Methods::ECHO,
         "print" => return Methods::PRINT,
         _ => return Methods::NONE,
@@ -90,4 +91,61 @@ pub fn is_literal(param: &str) -> bool {
     } else {
         false
     }
+}
+
+pub fn get_curly_bracket_indexes(code: &str) -> Vec<(usize, usize)> {
+    let mut result = Vec::new();
+    let mut stack = Vec::new();
+
+    for (index, character) in code.char_indices() {
+        match character {
+            '{' => {
+                stack.push(index);
+            }
+            '}' => {
+                if let Some(start_index) = stack.pop() {
+                    result.push((start_index, index));
+                }
+            }
+            _ => {}
+        }
+    }
+
+    result
+}
+
+pub fn remove_carriage(codes: Vec<&str>) -> Vec<&str> {
+    let mut modified = Vec::new();
+
+    for line in codes {
+        if line == "\r" {
+            continue;
+        }
+
+        modified.push(line)
+    }
+
+    return modified;
+}
+
+pub fn convert_code(input: Vec<&str>) -> Vec<String> {
+    let mut output = Vec::new();
+    let mut indent = 0;
+
+    for line in input {
+        let trimmed_line = line.trim();
+
+        if trimmed_line.starts_with("}") {
+            indent -= 1;
+        }
+
+        let indented_line = format!("{:indent$}{}", "", trimmed_line, indent = indent * 4);
+        output.push(indented_line);
+
+        if trimmed_line.ends_with("{") {
+            indent += 1;
+        }
+    }
+
+    output
 }
