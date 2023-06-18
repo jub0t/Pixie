@@ -87,27 +87,6 @@ pub fn track_until_nl_sc(code: &str, start: usize) -> usize {
     index
 }
 
-pub fn split_by_nl(code: &str) -> Vec<&str> {
-    let mut result = Vec::new();
-    let mut start = 0;
-
-    for (i, c) in code.char_indices() {
-        if c == '\n' {
-            if start != i {
-                result.push(&code[start..i]);
-            }
-
-            start = i + 1;
-        }
-    }
-
-    if start < code.len() {
-        result.push(&code[start..]);
-    }
-
-    result
-}
-
 pub fn get_next_space_index(index: usize, spaces: &[usize]) -> Option<usize> {
     for &space_index in spaces.iter().skip_while(|&i| *i <= index) {
         return Some(space_index);
@@ -139,12 +118,6 @@ pub fn track_until_left_paren(code: &str) -> Option<&str> {
     Some(&code[..end_pos])
 }
 
-pub fn track_until_right_paren(code: &str) -> Option<&str> {
-    let end_pos = code.find(')')?;
-
-    Some(&code[..end_pos])
-}
-
 pub fn track_until_function_end_brackets(code: &str) -> &str {
     let start_idx = code.find("function").unwrap_or(0); // Find the index of the first occurrence of "fn" in the code
     let mut open_braces = 0;
@@ -168,13 +141,6 @@ pub fn track_until_function_end_brackets(code: &str) -> &str {
 pub fn is_alphanumeric_str(s: &str) -> bool {
     s.chars()
         .all(|c| c.is_alphanumeric() || c.to_string() == "_")
-}
-
-pub fn remove_first_char(s: &str) -> &str {
-    match s.chars().next() {
-        Some(_) => &s[1..],
-        None => s,
-    }
 }
 
 pub fn split_until_first<'a>(code: &'a str, splitter: &'a str) -> (&'a str, &'a str) {

@@ -10,7 +10,6 @@ use std::{
     collections::HashMap,
     env::{self},
     fs,
-    hash::Hash,
 };
 
 use crate::{parser::*, tokenize::*};

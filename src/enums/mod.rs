@@ -26,8 +26,7 @@ pub struct Variable {
 
 #[derive(Debug)]
 pub enum FuntionType {
-    STANDARD,
-    CUSTOM,
+    CUSTOM = 1,
 }
 
 #[derive(Debug)]

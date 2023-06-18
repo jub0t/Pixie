@@ -93,38 +93,3 @@ pub fn remove_quotes_from_sides(code: &str) -> String {
         code.to_string()
     }
 }
-
-pub fn get_curly_bracket_indexes(code: &str) -> Vec<(usize, usize)> {
-    let mut result = Vec::new();
-    let mut stack = Vec::new();
-
-    for (index, character) in code.char_indices() {
-        match character {
-            '{' => {
-                stack.push(index);
-            }
-            '}' => {
-                if let Some(start_index) = stack.pop() {
-                    result.push((start_index, index));
-                }
-            }
-            _ => {}
-        }
-    }
-
-    result
-}
-
-pub fn remove_carriage(codes: Vec<&str>) -> Vec<&str> {
-    let mut modified = Vec::new();
-
-    for line in codes {
-        if line == "\r" {
-            continue;
-        }
-
-        modified.push(line)
-    }
-
-    return modified;
-}
