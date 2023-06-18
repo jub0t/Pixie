@@ -202,3 +202,19 @@ pub fn get_paren_indexes(code: &str) -> Vec<(usize, usize)> {
 
     result
 }
+
+pub fn process_parens(mut input: String) -> String {
+    if let Some(first_char) = input.chars().next() {
+        if first_char == '(' {
+            input.remove(0);
+        }
+    }
+
+    if let Some(last_char) = input.chars().last() {
+        if last_char == ')' {
+            input.pop();
+        }
+    }
+
+    input
+}

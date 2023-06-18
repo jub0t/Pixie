@@ -36,10 +36,16 @@ pub struct Action {
     pub value: AnyValue,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Param {
     pub ptype: Type,
     pub value: String,
+}
+
+#[derive(Debug)]
+pub struct Argument {
+    pub ptype: Type,
+    pub value: AnyValue,
 }
 
 #[derive(Debug)]

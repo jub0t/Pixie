@@ -10,6 +10,7 @@ use std::{
     collections::HashMap,
     env::{self},
     fs,
+    hash::Hash,
 };
 
 use crate::{parser::*, tokenize::*};
@@ -32,7 +33,6 @@ fn main() {
         Ok(bytes) => {
             let code = String::from_utf8(bytes).unwrap();
             let to_parse = tokenize_code(code.as_str());
-            println!("{:?}", to_parse);
 
             'lineiter: for line in to_parse {
                 let code = line.as_str();
@@ -210,7 +210,37 @@ fn main() {
                             Methods::PRINT | Methods::ECHO => {}
                             _ => {
                                 if let Some(function) = functions.get(func_name) {
-                                    println!("{:?}", function)
+                                    let args_string = stack.replace(func_name, "");
+                                    let mut args: HashMap<String, Argument> = HashMap::new();
+
+                                    for (index, arg) in
+                                        process_parens(args_string).split(",").enumerate()
+                                    {
+                                        let mut arg_type = identify_type(arg);
+                                        let mut parsed_val = parse_to_type(arg, arg_type.clone());
+
+                                        match arg_type {
+                                            Type::String(_) => {
+                                                let nq = remove_quotes_from_sides(arg);
+
+                                                arg_type = identify_type(nq.as_str());
+                                                parsed_val = Box::new(nq)
+                                            }
+                                            _ => {}
+                                        }
+
+                                        let paraminfo = &function.params[index];
+
+                                        args.insert(
+                                            paraminfo.value.clone(),
+                                            Argument {
+                                                ptype: arg_type,
+                                                value: parsed_val,
+                                            },
+                                        );
+                                    }
+
+                                    println!("{:#?}", args);
                                 } else {
                                     println!("Function {:?} is never defined", func_name)
                                 }
