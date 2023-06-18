@@ -1,7 +1,7 @@
 timer
-python3 ../test/code.test
+python3 ./coverage/stress.test
 timer /s
 
 timer
-ruxt.exe ../test/code.test
+ruxt.exe ./stress.test
 timer /s

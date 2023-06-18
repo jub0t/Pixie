@@ -238,7 +238,7 @@ fn main() {
                                             );
                                         } else {
                                             println!(
-                                                "Extra parameter(s) passed while calling function {:?}",
+                                                "Extra parameter passed while calling function {:?}",
                                                 func_name
                                             );
                                         }
