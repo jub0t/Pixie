@@ -8,8 +8,6 @@
 ## Example
 
 ```js
-master
-
 let name = "John Doe"
 print(name)
 
