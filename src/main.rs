@@ -33,7 +33,7 @@ fn main() {
             let code = String::from_utf8(bytes).unwrap();
             let to_parse = tokenize_code(code.as_str());
 
-            'lineiter: for line in to_parse {
+            'lineiter: for (line_ind, line) in to_parse.iter().enumerate() {
                 let code = line.as_str();
                 let chars = code.clone().split("").enumerate();
                 let spaces = get_all_space_indexes(code);
@@ -228,18 +228,21 @@ fn main() {
                                             _ => {}
                                         }
 
-                                        let paraminfo = &function.params[index];
-
-                                        args.insert(
-                                            paraminfo.value.clone(),
-                                            Argument {
-                                                ptype: arg_type,
-                                                value: parsed_val,
-                                            },
-                                        );
+                                        if let Some(paraminfo) = &function.params.get(index) {
+                                            args.insert(
+                                                paraminfo.value.clone(),
+                                                Argument {
+                                                    ptype: arg_type,
+                                                    value: parsed_val,
+                                                },
+                                            );
+                                        } else {
+                                            println!(
+                                                "Extra parameter(s) passed while calling function {:?}",
+                                                func_name
+                                            );
+                                        }
                                     }
-
-                                    println!("{:#?}", args);
                                 } else {
                                     println!("Function {:?} is never defined", func_name)
                                 }

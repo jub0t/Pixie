@@ -1,4 +1,4 @@
-master
+master // Ignored
 
 let name = "John Doe"
 print(name)
@@ -12,7 +12,7 @@ print(age, cool)
 
 echo("Newlines Work Too\n")
 
-function my_func(t1: String, t2: I32){
+function my_func(t1: String, t2: I32) {
     print(t1)
     print(t2)
 }
