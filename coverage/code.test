@@ -12,8 +12,9 @@ print(age, cool)
 
 echo("Newlines Work Too\n")
 
-function my_func(text) {
-    print(text)
+function my_func(t1: String, t2: I32){
+    print(t1)
+    print(t2)
 }
 
 my_func("Function Params Work")

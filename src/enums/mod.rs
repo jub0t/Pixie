@@ -25,29 +25,29 @@ pub struct Variable {
 }
 
 #[derive(Debug)]
-enum FuntionType {
+pub enum FuntionType {
     STANDARD,
     CUSTOM,
 }
 
 #[derive(Debug)]
 pub struct Action {
-    ptype: Type,
-    value: AnyValue,
+    pub ptype: Type,
+    pub value: AnyValue,
 }
 
 #[derive(Debug)]
 pub struct Param {
-    ptype: Type,
-    value: AnyValue,
+    pub ptype: Type,
+    pub value: String,
 }
 
 #[derive(Debug)]
 pub struct Function {
-    ftype: FuntionType,
-    name: String,
-    params: Vec<Param>,
-    action: Vec<Action>,
+    pub ftype: FuntionType,
+    pub name: String,
+    pub params: Vec<Param>,
+    pub action: Vec<Action>,
 }
 
 #[derive(Debug, Clone, PartialEq)]

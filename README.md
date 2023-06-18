@@ -13,3 +13,8 @@ print(age, cool)
 
 echo("\nNewlines\n  Work Too")
 ```
+
+## Info
+
+* Built-in functions are called `Methods`
+* Types: `I32`, `String`, `F64`, `Bool`

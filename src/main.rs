@@ -5,14 +5,14 @@ mod processor;
 mod tokenize;
 
 use modules::*;
-use parser::parse_code;
 use processor::*;
 use std::{
     collections::HashMap,
     env::{self},
     fs,
-    ops::Index,
 };
+
+use crate::{parser::*, tokenize::*};
 
 fn main() {
     let mut variables: HashMap<String, Variable> = HashMap::new();
@@ -31,8 +31,8 @@ fn main() {
     match bytes {
         Ok(bytes) => {
             let code = String::from_utf8(bytes).unwrap();
-            let to_parse = parse_code(code.as_str());
-            println!("{:#?}", to_parse);
+            let to_parse = tokenize_code(code.as_str());
+            println!("{:?}", to_parse);
 
             'lineiter: for line in to_parse {
                 let code = line.as_str();
@@ -52,38 +52,36 @@ fn main() {
                                 }
                             }
 
-                            let akw = code.replace("function ", "");
-                            let lp = track_until_left_paren(akw.as_str())
-                                .unwrap()
-                                .replace(" ", "");
-                            let fn_name = lp.as_str();
+                            // Parse Function
+                            let splitted = split_until_first(code, " ");
+                            let fn_core = splitted.1;
+                            let fn_name = track_until_left_paren(fn_core);
+                            let param_list = get_paren_indexes(fn_core)[0];
+                            let args = fn_core[param_list.0 + 1..param_list.1]
+                                .split(",")
+                                .map(|param| param.trim())
+                                .collect::<Vec<&str>>();
 
-                            let rp = track_until_right_paren(akw.as_str()).unwrap();
+                            match fn_name {
+                                Some(name) => {
+                                    let params = parse_params(args.clone());
 
-                            if !is_alphanumeric_str(fn_name) {
-                                println!("Function name '{}' is invalid, functions names should only contain unedrscores and alphanumeric characters", lp);
-                                break;
+                                    functions.insert(
+                                        name.to_string(),
+                                        Function {
+                                            action: vec![],
+                                            ftype: FuntionType::CUSTOM,
+                                            name: name.to_string(),
+                                            params,
+                                        },
+                                    );
+                                }
+                                _ => {
+                                    println!("Function name {:?} is Invalid", fn_name)
+                                }
                             }
 
-                            let mut fparams = akw.replace(fn_name, "");
-                            let first_char = fparams.chars().nth(0).unwrap();
-
-                            println!("{}\n{}\n{}", lp, fparams, first_char);
-
-                            if first_char.to_string() == " " {
-                                fparams = remove_first_char(fparams.as_str()).to_string();
-                            }
-
-                            if first_char.to_string() == "(" {
-                                println!("parsing params")
-                            } else {
-                                println!("Expected Token '(', Found {:?}", first_char)
-                            }
-
-                            let lastp = track_until_right_paren(fparams.as_str()).unwrap();
-                            println!("{}", lastp);
-
-                            continue 'lineiter;
+                            continue 'chariter;
                         }
                         Keywords::CONST | Keywords::LET => {
                             match get_next_space_index(index, &spaces) {
@@ -148,11 +146,6 @@ fn main() {
                         _ => {}
                     }
 
-                    // Function parser
-                    if stack.ends_with("()") {
-                        println!("Calling Function '{}'", stack);
-                    }
-
                     // Built-in method parser
                     let method = method_to_enum(stack.clone());
                     let params = get_all_paren_indexes(code);
@@ -203,6 +196,28 @@ fn main() {
                             }
                         }
                         _ => {}
+                    }
+                }
+
+                // Custom function is being called
+                let parens = get_paren_indexes(stack.as_str());
+                if parens.len() > 0 {
+                    let pos = parens[0];
+                    let func_name = &stack[0..pos.0];
+
+                    if is_alphanumeric_str(func_name) && func_name.len() > 0 {
+                        match method_to_enum(func_name.to_string()) {
+                            Methods::PRINT | Methods::ECHO => {}
+                            _ => {
+                                if let Some(function) = functions.get(func_name) {
+                                    println!("{:?}", function)
+                                } else {
+                                    println!("Function {:?} is never defined", func_name)
+                                }
+                            }
+                        }
+
+                        continue 'lineiter;
                     }
                 }
             }

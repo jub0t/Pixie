@@ -176,3 +176,29 @@ pub fn remove_first_char(s: &str) -> &str {
         None => s,
     }
 }
+
+pub fn split_until_first<'a>(code: &'a str, splitter: &'a str) -> (&'a str, &'a str) {
+    if let Some(index) = code.find(splitter) {
+        let (first_part, second_part) = code.split_at(index);
+        (first_part, &second_part[splitter.len()..])
+    } else {
+        (code, "")
+    }
+}
+
+pub fn get_paren_indexes(code: &str) -> Vec<(usize, usize)> {
+    let mut result = Vec::new();
+    let mut stack = Vec::new();
+
+    for (index, char) in code.chars().enumerate() {
+        if char == '(' {
+            stack.push(index);
+        } else if char == ')' {
+            if let Some(opening_index) = stack.pop() {
+                result.push((opening_index, index));
+            }
+        }
+    }
+
+    result
+}

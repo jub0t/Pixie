@@ -60,13 +60,6 @@ pub fn parse_to_type(value: &str, vtype: Type) -> Box<dyn Any> {
     }
 }
 
-pub fn remove_quotes_from_sides(code: &str) -> String {
-    if code.len() >= 2 && code.starts_with('"') && code.ends_with('"') {
-        code[1..code.len() - 1].to_string()
-    } else {
-        code.to_string()
-    }
-}
 pub fn print_variable_value(value: &Variable) {
     match &value.vtype {
         Type::I32(i) => print!("{}", i),
@@ -90,6 +83,14 @@ pub fn is_literal(param: &str) -> bool {
         true
     } else {
         false
+    }
+}
+
+pub fn remove_quotes_from_sides(code: &str) -> String {
+    if code.len() >= 2 && code.starts_with('"') && code.ends_with('"') {
+        code[1..code.len() - 1].to_string()
+    } else {
+        code.to_string()
     }
 }
 
@@ -126,26 +127,4 @@ pub fn remove_carriage(codes: Vec<&str>) -> Vec<&str> {
     }
 
     return modified;
-}
-
-pub fn convert_code(input: Vec<&str>) -> Vec<String> {
-    let mut output = Vec::new();
-    let mut indent = 0;
-
-    for line in input {
-        let trimmed_line = line.trim();
-
-        if trimmed_line.starts_with("}") {
-            indent -= 1;
-        }
-
-        let indented_line = format!("{:indent$}{}", "", trimmed_line, indent = indent * 4);
-        output.push(indented_line);
-
-        if trimmed_line.ends_with("{") {
-            indent += 1;
-        }
-    }
-
-    output
 }

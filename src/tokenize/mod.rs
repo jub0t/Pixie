@@ -7,6 +7,7 @@ pub fn tokenize_code(code: &str) -> Vec<String> {
 
     for (index, character) in code.split("").enumerate() {
         stack = stack.add(character);
+        // println!("{}", stack);
 
         let kw = keyword_to_enum(stack.clone());
         let md = method_to_enum(stack.clone());
@@ -17,6 +18,7 @@ pub fn tokenize_code(code: &str) -> Vec<String> {
                 let parsed = track_until_nl_sc(code, index);
                 let code = stack.clone() + &code[index..parsed];
                 lines.push(code);
+                stack = String::new();
             }
         }
 
@@ -24,6 +26,7 @@ pub fn tokenize_code(code: &str) -> Vec<String> {
             Keywords::FUNCTION => {
                 let code = track_until_function_end_brackets(code);
                 lines.push(code.to_string());
+                stack = String::new();
 
                 continue;
             }
@@ -35,7 +38,21 @@ pub fn tokenize_code(code: &str) -> Vec<String> {
                 let code = code.as_str();
 
                 lines.push(code.to_string());
+                stack = String::new();
 
+                continue;
+            }
+        }
+
+        // Custom function is being called
+        let parens = get_paren_indexes(stack.as_str());
+        if parens.len() > 0 {
+            let pos = parens[0];
+            let func_name = &stack[0..pos.0];
+
+            if is_alphanumeric_str(func_name) && func_name.len() > 0 {
+                lines.push(stack.to_string());
+                stack = String::new();
                 continue;
             }
         }
