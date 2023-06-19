@@ -1,5 +1,5 @@
 pub use crate::enums::*;
-use std::any::Any;
+use std::{any::Any, collections::HashMap};
 
 pub fn keyword_to_enum(kw: String) -> Keywords {
     match kw.to_lowercase().as_str() {
@@ -91,5 +91,18 @@ pub fn remove_quotes_from_sides(code: &str) -> String {
         code[1..code.len() - 1].to_string()
     } else {
         code.to_string()
+    }
+}
+
+pub fn merge_params_with_variables(params: Vec<Param>, vars: &mut HashMap<String, Variable>) {
+    for p in params {
+        vars.insert(
+            p.name,
+            Variable {
+                vtype: p.ptype,
+                mutable: true,
+                value: Box::new(p.value),
+            },
+        );
     }
 }

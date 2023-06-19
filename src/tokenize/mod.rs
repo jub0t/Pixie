@@ -6,6 +6,10 @@ pub fn tokenize_code(code: &str) -> Vec<String> {
     let mut lines = vec![];
 
     for (index, character) in code.split("").enumerate() {
+        if character == " " {
+            continue;
+        }
+
         stack = stack.add(character);
 
         let kw = keyword_to_enum(stack.clone());

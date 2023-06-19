@@ -11,15 +11,21 @@ pub fn parse_params(pstr: Vec<&str>) -> Vec<Param> {
         let ptype = identify_type(ptype_str);
 
         params.push(Param {
-            ptype,
+            name: name.to_string(),
             value: name.to_string(),
+            ptype,
         })
     }
 
     return params;
 }
 
-pub fn parse_function(code: &str, line: String, functions: &mut HashMap<String, Function>) {
+pub fn parse_function(
+    code: &str,
+    line: String,
+    functions: &mut HashMap<String, Function>,
+    variables: &mut HashMap<String, Variable>,
+) {
     // Parse Function
     let splitted = split_until_first(code, " ");
     let fn_core = splitted.1;
@@ -40,13 +46,14 @@ pub fn parse_function(code: &str, line: String, functions: &mut HashMap<String, 
                     action: vec![],
                     ftype: FuntionType::CUSTOM,
                     name: name.to_string(),
-                    params,
+                    params: params.clone(),
                 },
             );
 
             // Parse Function Inside
             let func_code = get_contents_within_func(line.as_str());
-            println!("{}", func_code);
+            merge_params_with_variables(params, variables);
+            parse_raw_code(func_code, functions, variables)
         }
         _ => {
             println!("Function name {:?} is Invalid", fn_name)
@@ -179,7 +186,7 @@ pub fn parse_keyword(
                 }
             }
 
-            parse_function(code, line.to_owned(), functions);
+            parse_function(code, line.to_owned(), functions, variables);
 
             return;
         }
@@ -237,5 +244,34 @@ pub fn parse_keyword(
             }
         },
         _ => {}
+    }
+}
+
+pub fn parse_raw_code(
+    code: &str,
+    functions: &mut HashMap<String, Function>,
+    variables: &mut HashMap<String, Variable>,
+) {
+    let to_parse = tokenize_code(code);
+
+    for (_, line) in to_parse.iter().enumerate() {
+        let code = line.as_str();
+        let chars = code.clone().split("").enumerate();
+        let spaces = get_all_space_indexes(code);
+        let mut stack = "".to_string();
+
+        for (index, character) in chars.clone() {
+            stack = stack.to_string() + character;
+
+            let kw = keyword_to_enum(stack.clone());
+
+            parse_keyword(
+                kw, code, index, line, functions, variables, &mut stack, &spaces,
+            );
+
+            parse_builtin_method(stack.clone(), code, &variables);
+        }
+
+        parse_custom_function(stack, &functions);
     }
 }
