@@ -7,7 +7,6 @@ pub fn tokenize_code(code: &str) -> Vec<String> {
 
     for (index, character) in code.split("").enumerate() {
         stack = stack.add(character);
-        // println!("{}", stack);
 
         let kw = keyword_to_enum(stack.clone());
         let md = method_to_enum(stack.clone());

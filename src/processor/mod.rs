@@ -184,3 +184,14 @@ pub fn process_parens(mut input: String) -> String {
 
     input
 }
+
+pub fn get_contents_within_func(funccode: &str) -> &str {
+    if let Some(end_index) = funccode.rfind('}') {
+        if let Some(start_index) = funccode.find('{') {
+            let code = &funccode[start_index + 1..end_index];
+            return code;
+        }
+    }
+
+    return "";
+}
