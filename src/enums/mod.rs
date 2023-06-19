@@ -37,6 +37,7 @@ pub struct Action {
 
 #[derive(Debug, Clone)]
 pub struct Param {
+    pub index: i8,
     pub name: String,
     pub ptype: Type,
     pub value: String,
@@ -53,7 +54,7 @@ pub struct Function {
     pub ftype: FuntionType,
     pub name: String,
     pub params: Vec<Param>,
-    pub action: Vec<Action>,
+    pub innerContents: String,
 }
 
 #[derive(Debug, Clone, PartialEq)]

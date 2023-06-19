@@ -1,5 +1,5 @@
 pub use crate::enums::*;
-use std::{any::Any, collections::HashMap};
+use std::{any::Any, collections::HashMap, i8};
 
 pub fn keyword_to_enum(kw: String) -> Keywords {
     match kw.to_lowercase().as_str() {
@@ -105,4 +105,22 @@ pub fn merge_params_with_variables(params: Vec<Param>, vars: &mut HashMap<String
             },
         );
     }
+}
+
+pub fn params_to_hashmap(params: Vec<Param>) -> HashMap<String, Param> {
+    let mut map: HashMap<String, Param> = HashMap::new();
+
+    for (index, param) in params.iter().enumerate() {
+        map.insert(
+            param.name.clone(),
+            Param {
+                index: index as i8,
+                name: param.to_owned().name,
+                ptype: param.to_owned().ptype,
+                value: param.to_owned().value,
+            },
+        );
+    }
+
+    return map;
 }

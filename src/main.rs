@@ -30,7 +30,7 @@ fn main() {
             let mut functions: HashMap<String, Function> = HashMap::new();
 
             let code = String::from_utf8(bytes).unwrap();
-            parse_raw_code(code.as_str(), &mut functions, &mut variables)
+            parse_raw_code(code.as_str(), &mut functions, &mut variables, vec![])
         }
         Err(err) => {
             println!("Error reading the file: {}", err);

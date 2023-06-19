@@ -4,13 +4,14 @@ use crate::*;
 pub fn parse_params(pstr: Vec<&str>) -> Vec<Param> {
     let mut params = vec![];
 
-    for param_str in pstr {
+    for (index, param_str) in pstr.iter().enumerate() {
         let tokens: Vec<&str> = param_str.split(':').map(|s| s.trim()).collect();
         let name = tokens[0];
         let ptype_str = tokens[1];
         let ptype = identify_type(ptype_str);
 
         params.push(Param {
+            index: index as i8,
             name: name.to_string(),
             value: name.to_string(),
             ptype,
@@ -31,6 +32,7 @@ pub fn parse_function(
     let fn_core = splitted.1;
     let fn_name = track_until_left_paren(fn_core);
     let param_list = get_paren_indexes(fn_core)[0];
+
     let args = fn_core[param_list.0 + 1..param_list.1]
         .split(",")
         .map(|param| param.trim())
@@ -39,21 +41,17 @@ pub fn parse_function(
     match fn_name {
         Some(name) => {
             let params = parse_params(args.clone());
+            let func_code = get_contents_within_func(line.as_str());
 
             functions.insert(
                 name.to_string(),
                 Function {
-                    action: vec![],
+                    innerContents: func_code.to_string(),
                     ftype: FuntionType::CUSTOM,
                     name: name.to_string(),
                     params: params.clone(),
                 },
             );
-
-            // Parse Function Inside
-            let func_code = get_contents_within_func(line.as_str());
-            merge_params_with_variables(params, variables);
-            parse_raw_code(func_code, functions, variables)
         }
         _ => {
             println!("Function name {:?} is Invalid", fn_name)
@@ -158,6 +156,16 @@ pub fn parse_custom_function(stack: String, functions: &HashMap<String, Function
                                     func_name
                                 );
                             }
+                            println!("{:#?}", function);
+                            println!("{:#?}", args);
+
+                            // Parse Function Inside
+                            let func_code = &function.innerContents;
+                            println!("{:#?}", func_code);
+                            // merge_params_with_variables(params.clone(), variables);
+                            // parse_raw_code(func_code, functions, variables, params);
+
+                            return;
                         }
                     } else {
                         println!("Function {:?} is never defined", func_name)
@@ -251,6 +259,7 @@ pub fn parse_raw_code(
     code: &str,
     functions: &mut HashMap<String, Function>,
     variables: &mut HashMap<String, Variable>,
+    params: Vec<Param>,
 ) {
     let to_parse = tokenize_code(code);
 
