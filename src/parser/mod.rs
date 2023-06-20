@@ -21,12 +21,7 @@ pub fn parse_params(pstr: Vec<&str>) -> Vec<Param> {
     return params;
 }
 
-pub fn parse_function(
-    code: &str,
-    line: String,
-    functions: &mut HashMap<String, Function>,
-    variables: &mut HashMap<String, Variable>,
-) {
+pub fn parse_function(code: &str, line: String, functions: &mut Functions) {
     // Parse Function
     let splitted = split_until_first(code, " ");
     let fn_core = splitted.1;
@@ -46,7 +41,7 @@ pub fn parse_function(
             functions.insert(
                 name.to_string(),
                 Function {
-                    innerContents: func_code.to_string(),
+                    inner_contents: func_code.to_string(),
                     ftype: FuntionType::CUSTOM,
                     name: name.to_string(),
                     params: params.clone(),
@@ -113,7 +108,7 @@ pub fn parse_builtin_method(stack: String, code: &str, variables: &HashMap<Strin
     }
 }
 
-pub fn parse_custom_function(stack: String, functions: &HashMap<String, Function>) {
+pub fn parse_custom_function(stack: String, functions: &mut Functions) {
     let parens = get_paren_indexes(stack.as_str());
 
     if parens.len() > 0 {
@@ -156,17 +151,20 @@ pub fn parse_custom_function(stack: String, functions: &HashMap<String, Function
                                     func_name
                                 );
                             }
-                            println!("{:#?}", function);
-                            println!("{:#?}", args);
-
-                            // Parse Function Inside
-                            let func_code = &function.innerContents;
-                            println!("{:#?}", func_code);
-                            // merge_params_with_variables(params.clone(), variables);
-                            // parse_raw_code(func_code, functions, variables, params);
-
-                            return;
                         }
+
+                        // Clone the functions variable before passing it to parse_raw_code
+                        let mut cloned_functions = functions.clone();
+
+                        // Parse Function Inside
+                        let mut arguments = args_to_variables(args);
+                        parse_raw_code(
+                            &function.inner_contents,
+                            &mut cloned_functions,
+                            &mut arguments,
+                        );
+
+                        return;
                     } else {
                         println!("Function {:?} is never defined", func_name)
                     }
@@ -181,7 +179,7 @@ pub fn parse_keyword(
     code: &str,
     index: usize,
     line: &str,
-    functions: &mut HashMap<String, Function>,
+    functions: &mut Functions,
     variables: &mut HashMap<String, Variable>,
     stack: &mut String,
     spaces: &[usize],
@@ -194,7 +192,7 @@ pub fn parse_keyword(
                 }
             }
 
-            parse_function(code, line.to_owned(), functions, variables);
+            parse_function(code, line.to_owned(), functions);
 
             return;
         }
@@ -257,9 +255,8 @@ pub fn parse_keyword(
 
 pub fn parse_raw_code(
     code: &str,
-    functions: &mut HashMap<String, Function>,
+    functions: &mut Functions,
     variables: &mut HashMap<String, Variable>,
-    params: Vec<Param>,
 ) {
     let to_parse = tokenize_code(code);
 
@@ -271,7 +268,6 @@ pub fn parse_raw_code(
 
         for (index, character) in chars.clone() {
             stack = stack.to_string() + character;
-
             let kw = keyword_to_enum(stack.clone());
 
             parse_keyword(
@@ -281,6 +277,6 @@ pub fn parse_raw_code(
             parse_builtin_method(stack.clone(), code, &variables);
         }
 
-        parse_custom_function(stack, &functions);
+        parse_custom_function(stack, functions);
     }
 }

@@ -10,18 +10,18 @@ pub fn get_all_space_indexes(code: &str) -> Vec<usize> {
 
 pub fn variable_name_valid(variable_name: &str) -> bool {
     if variable_name.is_empty() {
-        println!("EMpty var");
+        println!("Variable name is empty");
         return false;
     }
 
     if !variable_name.chars().next().unwrap().is_alphabetic() {
-        println!("non aplha var");
+        println!("Variable name {:?} is non-alphabetic", variable_name);
         return false;
     }
 
     for c in variable_name.chars() {
         if !c.is_alphanumeric() && c.to_string() != "_" {
-            println!("Variable {} is Non alpha-numerical", c);
+            println!("Variable {:?} is Non alpha-numerical", c);
             return false;
         }
     }

@@ -25,5 +25,5 @@ function my_func(t1: String, t2: I32){
     print(t2)
 }
 
-my_func("Function Params Work")
+my_func("Function Params Work", 100)
 ```

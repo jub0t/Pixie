@@ -1,8 +1,10 @@
-use std::any::Any;
+use std::{any::Any, collections::HashMap};
 
 pub type AnyValue = Box<dyn Any>;
+pub type Functions = HashMap<String, Function>;
+pub type Variables = HashMap<String, Variable>;
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum Keywords {
     NONE = 0,
     CONST = 1,
@@ -24,7 +26,7 @@ pub struct Variable {
     pub value: AnyValue,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FuntionType {
     CUSTOM = 1,
 }
@@ -49,12 +51,12 @@ pub struct Argument {
     pub value: AnyValue,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Function {
     pub ftype: FuntionType,
     pub name: String,
     pub params: Vec<Param>,
-    pub innerContents: String,
+    pub inner_contents: String,
 }
 
 #[derive(Debug, Clone, PartialEq)]
