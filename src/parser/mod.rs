@@ -141,7 +141,7 @@ pub fn parse_custom_function(stack: String, functions: &mut Functions) {
                                 args.insert(
                                     paraminfo.value.clone(),
                                     Argument {
-                                        ptype: arg_type,
+                                        ptype: arg_type.clone(),
                                         value: parsed_val,
                                     },
                                 );
